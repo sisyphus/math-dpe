@@ -1,0 +1,7 @@
+MANIFEST
+dpe.h
+DPE.pm
+DPE.xs
+Makefile.PL
+typemap
+t/00load.t
