@@ -1,0 +1,7 @@
+dpe_t *			DPE
+
+INPUT
+
+DPE
+            $var = INT2PTR($type, SvIV(SvRV($arg)))
+
