@@ -23,6 +23,7 @@ DynaLoader::bootstrap Math::DPE $VERSION;
     '<='   => \&_overload_lte,
     '=='   => \&_overload_equiv,
     '!='   => \&_overload_not_equiv,
+    '""'   => \&_overload_string,
     'sqrt' => \&_overload_sqrt;
 
 #    '++'   => \&overload_inc,
@@ -31,7 +32,6 @@ DynaLoader::bootstrap Math::DPE $VERSION;
 #    '-='   => \&overload_sub_eq,
 #    '*='   => \&overload_mul_eq,
 #    '/='   => \&overload_div_eq,
-#    '""'   => \&overload_string,
 #    '<=>'  => \&overload_spaceship,
 #   '!'    => \&overload_not,
 #   'bool' => \&overload_true,
@@ -48,6 +48,7 @@ DynaLoader::bootstrap Math::DPE $VERSION;
 
 @Math::DPE::EXPORT = ();
 @Math::DPE::EXPORT_OK = qw(
+    DPE_EXP DPE_MANT DPE_SIGN
     dpe_init dpe_nan_p dpe_inf_p dpe_set dpe_neg dpe_abs dpe_normalize
     dpe_set_ui dpe_set_ui dpe_set_si dpe_set_d dpe_set_ld dpe_get_si dpe_get_ui
     dpe_get_d dpe_get_d dpe_get_ld dpe_set_z dpe_get_z dpe_get_z_exp dpe_add
@@ -58,6 +59,7 @@ DynaLoader::bootstrap Math::DPE $VERSION;
     );
 
 %Math::DPE::EXPORT_TAGS = (all => [qw(
+    DPE_EXP DPE_MANT DPE_SIGN
     dpe_init dpe_nan_p dpe_inf_p dpe_set dpe_neg dpe_abs dpe_normalize
     dpe_set_ui dpe_set_ui dpe_set_si dpe_set_d dpe_set_ld dpe_get_si dpe_get_ui
     dpe_get_d dpe_get_d dpe_get_ld dpe_set_z dpe_get_z dpe_get_z_exp dpe_add
@@ -68,5 +70,48 @@ DynaLoader::bootstrap Math::DPE $VERSION;
     )]);
 
 sub dl_load_flags {0} # Prevent DynaLoader from complaining and croaking
+
+sub new {
+    return dpe_init() unless @_;
+
+    if(@_ > 2) {die "Too many arguments supplied to new()"}
+
+    if(!ref($_[0]) && $_[0] eq "Math::DPE") {
+      shift;
+      if(!@_) {return dpe_init()}
+    }
+
+    if(@_ > 1) {die "Too many arguments supplied to new() - expected no more than one"}
+
+    my $arg = shift;
+    my $type = _itsa($arg);
+    my $ret = dpe_init();
+
+   if($type == 1) {
+     dpe_set_ui($ret, $arg);
+     return $ret;
+   }
+
+   if($type == 2) {
+     dpe_set_si($ret, $arg);
+     return $ret;
+   }
+
+   if($type == 3) {
+     dpe_set_NV($ret, $arg);
+     return $ret;
+   }
+
+   if($type == 8 || $type == 9) {
+     dpe_set_z($ret, $arg);
+     return $ret;
+   }
+
+   die die "Inappropriate argument supplied to new()";
+}
+
+sub _overload_string {
+    return DPE_MANT($_[0]) . '*10^' . DPE_EXP($_[0]);
+}
 
 1;
