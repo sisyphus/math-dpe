@@ -234,16 +234,16 @@ SV * XS_dpe_get_si_exp (SV * x, dpe_t * op) {
      return newSViv(exponent);
 }
 
-int XS_dpe_out_str(FILE * stream, int base, dpe_t * op) {
+int XS_dpe_out_str(FILE * stream, dpe_t * op) {
      int ret;
-     ret = dpe_out_str(stream, base, *op);
+     ret = dpe_out_str(stream, 10, *op);
      fflush(stream);
      return ret;
 }
 
-SV * XS_dpe_inp_str(dpe_t * rop, FILE * stream, int base) {
+SV * XS_dpe_inp_str(dpe_t * rop, FILE * stream) {
      size_t ret;
-     ret = dpe_inp_str(*rop, stream, base);
+     ret = dpe_inp_str(*rop, stream, 10);
      return newSVuv(ret);
 }
 
@@ -511,6 +511,34 @@ SV * _overload_sqrt(dpe_t * a, SV * b, SV * third) {
 
      dpe_sqrt(*dpe_t_obj, *a);
      return obj_ref;
+}
+
+SV * _itsa(SV * a) {
+     if(SvUOK(a)) return newSVuv(1);
+     if(SvIOK(a)) return newSVuv(2);
+     if(SvNOK(a)) return newSVuv(3);
+     if(SvPOK(a)) return newSVuv(4);
+     if(sv_isobject(a)) {
+       const char* h = HvNAME(SvSTASH(SvRV(a)));
+
+       if(strEQ(h, "Math::MPFR")) return newSVuv(5);
+       if(strEQ(h, "Math::GMPf")) return newSVuv(6);
+       if(strEQ(h, "Math::GMPq")) return newSVuv(7);
+       if(strEQ(h, "Math::GMPz")) return newSVuv(8);
+       if(strEQ(h, "Math::GMP")) return newSVuv(9);        }
+     return newSVuv(0);
+}
+
+SV * XS_DPE_MANT(dpe_t * x) {
+     return newSVnv(DPE_MANT(*x));
+}
+
+SV * XS_DPE_EXP(dpe_t *x) {
+     return newSViv(DPE_EXP(*x));
+}
+
+int  XS_DPE_SIGN(dpe_t * x) {
+     return DPE_SIGN(*x);
 }
 MODULE = Math::DPE  PACKAGE = Math::DPE  PREFIX = XS_
 
@@ -886,16 +914,14 @@ XS_dpe_get_si_exp (x, op)
 	dpe_t *	op
 
 int
-XS_dpe_out_str (stream, base, op)
+XS_dpe_out_str (stream, op)
 	FILE *	stream
-	int	base
 	dpe_t *	op
 
 SV *
-XS_dpe_inp_str (rop, stream, base)
+XS_dpe_inp_str (rop, stream)
 	dpe_t *	rop
 	FILE *	stream
-	int	base
 
 void
 XS_dpe_dump (op)
@@ -1107,4 +1133,20 @@ _overload_sqrt (a, b, third)
 	dpe_t *	a
 	SV *	b
 	SV *	third
+
+SV *
+_itsa (a)
+	SV *	a
+
+SV *
+XS_DPE_MANT (x)
+	dpe_t *	x
+
+SV *
+XS_DPE_EXP (x)
+	dpe_t *	x
+
+int
+XS_DPE_SIGN (x)
+	dpe_t *	x
 
