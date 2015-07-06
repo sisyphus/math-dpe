@@ -6,3 +6,4 @@ Makefile.PL
 typemap
 t/00load.t
 t/add.t
+t/mul.t
