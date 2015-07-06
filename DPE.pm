@@ -56,6 +56,7 @@ DynaLoader::bootstrap Math::DPE $VERSION;
     dpe_div_2exp pe_div_2exp dpe_div_ui dpe_get_si_exp dpe_out_str dpe_inp_str
     dpe_dump dpe_dump dpe_zero_p dpe_cmp dpe_cmp_d dpe_cmp_ui dpe_cmp_si
     dpe_round dpe_round dpe_frac dpe_floor dpe_ceil dpe_swap
+    dpe_get_str
     );
 
 %Math::DPE::EXPORT_TAGS = (all => [qw(
@@ -67,6 +68,7 @@ DynaLoader::bootstrap Math::DPE $VERSION;
     dpe_div_2exp dpe_div_2exp dpe_div_ui dpe_get_si_exp dpe_out_str dpe_inp_str
     dpe_dump dpe_dump dpe_zero_p dpe_cmp dpe_cmp_d dpe_cmp_ui dpe_cmp_si
     dpe_round dpe_round dpe_frac dpe_floor dpe_ceil dpe_swap
+    dpe_get_str
     )]);
 
 sub dl_load_flags {0} # Prevent DynaLoader from complaining and croaking
@@ -111,7 +113,7 @@ sub new {
 }
 
 sub _overload_string {
-    return DPE_MANT($_[0]) . '*10^' . DPE_EXP($_[0]);
+    return dpe_get_str($_[0]);
 }
 
 1;
