@@ -241,6 +241,15 @@ int XS_dpe_out_str(FILE * stream, dpe_t * op) {
      return ret;
 }
 
+int _dpe_out_str_perlio(PerlIO * stream, dpe_t * op) {
+     int ret;
+     FILE * stdio_stream = PerlIO_exportFILE(stream, NULL);
+     ret = dpe_out_str(stdio_stream, 10, *op);
+     fflush(stdio_stream);
+     PerlIO_releaseFILE(stream, stdio_stream);
+     return ret;
+}
+
 SV * XS_dpe_inp_str(dpe_t * rop, FILE * stream) {
      size_t ret;
      ret = dpe_inp_str(*rop, stream, 10);
@@ -511,6 +520,69 @@ SV * _overload_sqrt(dpe_t * a, SV * b, SV * third) {
 
      dpe_sqrt(*dpe_t_obj, *a);
      return obj_ref;
+}
+void XS_dpe_get_str (dpe_t * op) {
+     dXSARGS;
+     char * buffer;
+     DPE_DOUBLE d = DPE_MANT(*op);
+     DPE_EXP_T e2 = DPE_EXP(*op);
+     int e10 = 0;
+     char sign = ' ';
+
+     Newx(buffer, 96, char);
+     if(buffer == NULL) croak("Failed to allocate memory in dpe_get_str");
+
+     EXTEND(SP, 1);
+
+     if(d == 0.0) {
+#ifdef DPE_USE_DOUBLE
+       sprintf (buffer, "%1.*f", dpe_str_prec, d);
+       ST(0) = sv_2mortal(newSVpv(buffer, 0));
+       Safefree(buffer);
+       XSRETURN(1);
+     }
+#else
+       sprintf (buffer, "%1.*Lf", dpe_str_prec, (long double) d);
+       ST(0) = sv_2mortal(newSVpv(buffer, 0));
+       Safefree(buffer);
+       XSRETURN(1);
+     }
+#endif
+     if(d < 0) {
+       d = -d;
+       sign = '-';
+     }
+     if(e2 > 0) {
+       while (e2 > 0) {
+         e2 --;
+         d *= 2.0;
+         if(d >= 10.0) {
+           d /= 10.0;
+           e10 ++;
+         }
+       }
+     }
+     else { /* e2 <= 0 */
+       while(e2 < 0) {
+         e2 ++;
+         d /= 2.0;
+         if(d < 1.0) {
+           d *= 10.0;
+           e10 --;
+         }
+       }
+     }
+#ifdef DPE_USE_DOUBLE
+     sprintf (buffer, "%c%1.*f*10^%d", sign, dpe_str_prec, d, e10);
+     ST(0) = sv_2mortal(newSVpv(buffer, 0));
+     Safefree(buffer);
+     XSRETURN(1);
+#else
+     sprintf (buffer, "%c%1.*Lf*10^%d", sign, dpe_str_prec, (long double) d, e10);
+     ST(0) = sv_2mortal(newSVpv(buffer, 0));
+     Safefree(buffer);
+     XSRETURN(1);
+#endif
 }
 
 SV * _itsa(SV * a) {
@@ -918,6 +990,11 @@ XS_dpe_out_str (stream, op)
 	FILE *	stream
 	dpe_t *	op
 
+int
+_dpe_out_str_perlio (stream, op)
+	PerlIO *	stream
+	dpe_t *	op
+
 SV *
 XS_dpe_inp_str (rop, stream)
 	dpe_t *	rop
@@ -1133,6 +1210,22 @@ _overload_sqrt (a, b, third)
 	dpe_t *	a
 	SV *	b
 	SV *	third
+
+void
+XS_dpe_get_str (op)
+	dpe_t *	op
+        PREINIT:
+        I32* temp;
+        PPCODE:
+        temp = PL_markstack_ptr++;
+        XS_dpe_get_str(op);
+        if (PL_markstack_ptr != temp) {
+          /* truly void, because dXSARGS not invoked */
+          PL_markstack_ptr = temp;
+          XSRETURN_EMPTY; /* return empty stack */
+        }
+        /* must have used dXSARGS; list context implied */
+        return; /* assume stack size is correct */
 
 SV *
 _itsa (a)
