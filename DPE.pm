@@ -24,6 +24,7 @@ DynaLoader::bootstrap Math::DPE $VERSION;
     '=='   => \&_overload_equiv,
     '!='   => \&_overload_not_equiv,
     '""'   => \&_overload_string,
+    '<=>'  => \&_overload_spaceship,
     'sqrt' => \&_overload_sqrt;
 
 #    '++'   => \&overload_inc,
@@ -32,7 +33,6 @@ DynaLoader::bootstrap Math::DPE $VERSION;
 #    '-='   => \&overload_sub_eq,
 #    '*='   => \&overload_mul_eq,
 #    '/='   => \&overload_div_eq,
-#    '<=>'  => \&overload_spaceship,
 #   '!'    => \&overload_not,
 #   'bool' => \&overload_true,
 #   '='    => \&overload_copy,
@@ -56,7 +56,8 @@ DynaLoader::bootstrap Math::DPE $VERSION;
     dpe_div_2exp pe_div_2exp dpe_div_ui dpe_get_si_exp dpe_out_str dpe_inp_str
     dpe_dump dpe_dump dpe_zero_p dpe_cmp dpe_cmp_d dpe_cmp_ui dpe_cmp_si
     dpe_round dpe_round dpe_frac dpe_floor dpe_ceil dpe_swap
-    dpe_get_str
+
+    dpe_get_str dpe_set_NV dpe_set_UV dpe_set_IV
     );
 
 %Math::DPE::EXPORT_TAGS = (all => [qw(
@@ -68,7 +69,8 @@ DynaLoader::bootstrap Math::DPE $VERSION;
     dpe_div_2exp dpe_div_2exp dpe_div_ui dpe_get_si_exp dpe_out_str dpe_inp_str
     dpe_dump dpe_dump dpe_zero_p dpe_cmp dpe_cmp_d dpe_cmp_ui dpe_cmp_si
     dpe_round dpe_round dpe_frac dpe_floor dpe_ceil dpe_swap
-    dpe_get_str
+
+    dpe_get_str dpe_set_NV dpe_set_UV dpe_set_IV
     )]);
 
 sub dl_load_flags {0} # Prevent DynaLoader from complaining and croaking
@@ -90,12 +92,12 @@ sub new {
     my $ret = dpe_init();
 
    if($type == 1) {
-     dpe_set_ui($ret, $arg);
+     dpe_set_UV($ret, $arg);
      return $ret;
    }
 
    if($type == 2) {
-     dpe_set_si($ret, $arg);
+     dpe_set_IV($ret, $arg);
      return $ret;
    }
 
