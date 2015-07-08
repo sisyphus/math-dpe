@@ -84,8 +84,32 @@ int XS_dpe_inf_p(dpe_t * op) {
     return _is_inf(DPE_MANT(*op));
 }
 
+void dpe_set_float128(dpe_t * rop, SV * sv ) {
+     DPE_MANT(*rop) = (DPE_DOUBLE)SvNV(sv);
+     DPE_EXP(*rop) = 0;
+     dpe_normalize (*rop);
+}
+
 void XS_dpe_set(dpe_t * rop, dpe_t * op) {
      dpe_set(*rop, *op);
+}
+
+void dpe_set_NV(dpe_t * rop, SV * sv) {
+     DPE_MANT(*rop) = (DPE_DOUBLE)SvNV(sv);
+     DPE_EXP(*rop) = 0;
+     dpe_normalize (*rop);
+}
+
+void dpe_set_UV(dpe_t * rop, SV * sv) {
+     DPE_MANT(*rop) = (DPE_DOUBLE)SvUV(sv);
+     DPE_EXP(*rop) = 0;
+     dpe_normalize (*rop);
+}
+
+void dpe_set_IV(dpe_t * rop, SV * sv) {
+     DPE_MANT(*rop) = (DPE_DOUBLE)SvIV(sv);
+     DPE_EXP(*rop) = 0;
+     dpe_normalize (*rop);
 }
 
 void XS_dpe_neg(dpe_t * rop, dpe_t * op) {
@@ -112,8 +136,8 @@ void XS_dpe_set_si(dpe_t * rop, unsigned long ul) {
      dpe_set_si(*rop , ul);
 }
 
-void XS_dpe_set_d(dpe_t * rop, double d) {
-     dpe_set_d(*rop , d);
+void XS_dpe_set_d(dpe_t * rop, SV * d) {
+     dpe_set_d(*rop , (double)SvNV(d));
 }
 
 void XS_dpe_set_ld(dpe_t * rop, SV * d) {
@@ -504,6 +528,25 @@ int _overload_lte(SV * a, SV * b, SV * third) {
      return 0;
 }
 
+SV * _overload_spaceship(SV * a, SV * b, SV * third) {
+     int ret;
+
+     if(sv_isobject(b)) {
+       const char* h = HvNAME(SvSTASH(SvRV(b)));
+       if(!strEQ(h, "Math::DPE")) croak("overloaded '<=>' handles only Math::DPE objects, not %s objects", h);
+     }
+     else croak("overloaded '<=>' handles only Math::DPE objects");
+
+     if(_is_nan(DPE_MANT(*(INT2PTR(dpe_t *, SvIV(SvRV(a)))))) ||
+        _is_nan(DPE_MANT(*(INT2PTR(dpe_t *, SvIV(SvRV(b))))))) return &PL_sv_undef;
+
+     ret = dpe_cmp(*(INT2PTR(dpe_t *, SvIV(SvRV(a)))), *(INT2PTR(dpe_t *, SvIV(SvRV(b)))));
+     if(third == &PL_sv_yes) ret *= -1;
+     if(ret < 0) return newSViv(-1);
+     if(ret > 0) return newSViv(1);
+     return newSViv(0);
+}
+
 SV * _overload_sqrt(dpe_t * a, SV * b, SV * third) {
      dpe_t * dpe_t_obj;
      SV * obj_ref, * obj;
@@ -521,7 +564,7 @@ SV * _overload_sqrt(dpe_t * a, SV * b, SV * third) {
      dpe_sqrt(*dpe_t_obj, *a);
      return obj_ref;
 }
-void XS_dpe_get_str (dpe_t * op) {
+void dpe_get_str (dpe_t * op) {
      dXSARGS;
      char * buffer;
      DPE_DOUBLE d = DPE_MANT(*op);
@@ -630,6 +673,23 @@ XS_dpe_inf_p (op)
 	dpe_t *	op
 
 void
+dpe_set_float128 (rop, sv)
+	dpe_t *	rop
+	SV *	sv
+        PREINIT:
+        I32* temp;
+        PPCODE:
+        temp = PL_markstack_ptr++;
+        dpe_set_float128(rop, sv);
+        if (PL_markstack_ptr != temp) {
+          /* truly void, because dXSARGS not invoked */
+          PL_markstack_ptr = temp;
+          XSRETURN_EMPTY; /* return empty stack */
+        }
+        /* must have used dXSARGS; list context implied */
+        return; /* assume stack size is correct */
+
+void
 XS_dpe_set (rop, op)
 	dpe_t *	rop
 	dpe_t *	op
@@ -638,6 +698,57 @@ XS_dpe_set (rop, op)
         PPCODE:
         temp = PL_markstack_ptr++;
         XS_dpe_set(rop, op);
+        if (PL_markstack_ptr != temp) {
+          /* truly void, because dXSARGS not invoked */
+          PL_markstack_ptr = temp;
+          XSRETURN_EMPTY; /* return empty stack */
+        }
+        /* must have used dXSARGS; list context implied */
+        return; /* assume stack size is correct */
+
+void
+dpe_set_NV (rop, sv)
+	dpe_t *	rop
+	SV *	sv
+        PREINIT:
+        I32* temp;
+        PPCODE:
+        temp = PL_markstack_ptr++;
+        dpe_set_NV(rop, sv);
+        if (PL_markstack_ptr != temp) {
+          /* truly void, because dXSARGS not invoked */
+          PL_markstack_ptr = temp;
+          XSRETURN_EMPTY; /* return empty stack */
+        }
+        /* must have used dXSARGS; list context implied */
+        return; /* assume stack size is correct */
+
+void
+dpe_set_UV (rop, sv)
+	dpe_t *	rop
+	SV *	sv
+        PREINIT:
+        I32* temp;
+        PPCODE:
+        temp = PL_markstack_ptr++;
+        dpe_set_UV(rop, sv);
+        if (PL_markstack_ptr != temp) {
+          /* truly void, because dXSARGS not invoked */
+          PL_markstack_ptr = temp;
+          XSRETURN_EMPTY; /* return empty stack */
+        }
+        /* must have used dXSARGS; list context implied */
+        return; /* assume stack size is correct */
+
+void
+dpe_set_IV (rop, sv)
+	dpe_t *	rop
+	SV *	sv
+        PREINIT:
+        I32* temp;
+        PPCODE:
+        temp = PL_markstack_ptr++;
+        dpe_set_IV(rop, sv);
         if (PL_markstack_ptr != temp) {
           /* truly void, because dXSARGS not invoked */
           PL_markstack_ptr = temp;
@@ -733,7 +844,7 @@ XS_dpe_set_si (rop, ul)
 void
 XS_dpe_set_d (rop, d)
 	dpe_t *	rop
-	double	d
+	SV *	d
         PREINIT:
         I32* temp;
         PPCODE:
@@ -1206,19 +1317,25 @@ _overload_lte (a, b, third)
 	SV *	third
 
 SV *
+_overload_spaceship (a, b, third)
+	SV *	a
+	SV *	b
+	SV *	third
+
+SV *
 _overload_sqrt (a, b, third)
 	dpe_t *	a
 	SV *	b
 	SV *	third
 
 void
-XS_dpe_get_str (op)
+dpe_get_str (op)
 	dpe_t *	op
         PREINIT:
         I32* temp;
         PPCODE:
         temp = PL_markstack_ptr++;
-        XS_dpe_get_str(op);
+        dpe_get_str(op);
         if (PL_markstack_ptr != temp) {
           /* truly void, because dXSARGS not invoked */
           PL_markstack_ptr = temp;
