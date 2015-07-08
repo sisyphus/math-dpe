@@ -5,7 +5,7 @@ my $defines;
 
 if($Config{nvtype} eq 'double') {$defines = '-DDPE_USE_DOUBLE'}
 elsif($Config{nvtype} eq 'long double') {$defines = '-DDPE_USE_LONG_DOUBLE'}
-elsif($Config{nvtype} eq 'float128') {$defines = '-DDPE_USE_FLOAT128'}
+elsif($Config{nvtype} =~ /float128/) {$defines = '-DDPE_USE_FLOAT128'}
 else {
   warn "Couldn't determine perl's NV type - bailing out";
   exit 0;
@@ -39,7 +39,6 @@ my %options = %{
   ],
   'INC' => '-I.',
   'VERSION_FROM' => 'DPE.pm',
-  'PREFIX' => 'XS_',
   'DEFINE'   => $defines,
   'META_MERGE' => {
    'meta-spec' => { version => 2 },
