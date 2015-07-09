@@ -49,8 +49,8 @@ MA 02110-1301, USA. */
 # error "Either DPE_USE_DOUBLE or DPE_USE_LONGDOUBLE shall be defined."
 #elif defined(DPE_USE_DOUBLE) && defined(DPE_USE_USE_FLOAT128)
 # error "Either DPE_USE_DOUBLE or DPE_USE_FLOAT128 shall be defined."
-#elif defined(DPE_USE_LONG_DOUBLE) && defined(DPE_USE_USE_FLOAT128)
-# error "Either DPE_USE_LONG_DOUBLE or DPE_USE_FLOAT128 shall be defined."
+#elif defined(DPE_USE_LONGDOUBLE) && defined(DPE_USE_FLOAT128)
+# error "Either DPE_USE_LONGDOUBLE or DPE_USE_FLOAT128 shall be defined."
 #endif
 
 #if (defined(__i386) || defined (__x86_64)) && !defined(DPE_LITTLEENDIAN32) && defined(DPE_USE_DOUBLE)
@@ -513,7 +513,18 @@ dpe_get_si_exp (long *x, dpe_t y)
     }
 }
 
+#if defined(DPE_USE_DOUBLE)
 static DPE_UNUSED_ATTR int dpe_str_prec = 16;
+#elif defined(DPE_USE_LONGDOUBLE) && defined(LONGDOUBLE_IS_DOUBLEDOUBLE)
+static DPE_UNUSED_ATTR int dpe_str_prec = 31;
+#elif defined(DPE_USE_LONGDOUBLE)
+static DPE_UNUSED_ATTR int dpe_str_prec = 18;
+#elif defined(DPE_USE_FLOAT128)
+static DPE_UNUSED_ATTR int dpe_str_prec = 33;
+#else
+static DPE_UNUSED_ATTR int dpe_str_prec = 16;
+#endif
+
 static int dpe_out_str (FILE *s, int base, dpe_t x) DPE_UNUSED_ATTR;
 
 static int
