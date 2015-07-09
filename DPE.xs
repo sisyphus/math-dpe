@@ -655,6 +655,58 @@ SV * XS_DPE_EXP(dpe_t *x) {
 int  XS_DPE_SIGN(dpe_t * x) {
      return DPE_SIGN(*x);
 }
+
+int XS_dpe_str_prec(void) {
+     return dpe_str_prec;
+}
+
+int _defined_LONGDOUBLE_IS_DOUBLEDOUBLE(void) {
+#ifdef LONGDOUBLE_IS_DOUBLEDOUBLE
+     return 1;
+#else
+     return 0;
+#endif
+}
+
+int _defined_DPE_USE_DOUBLE(void) {
+#ifdef DPE_USE_DOUBLE
+     return 1;
+#else
+     return 0;
+#endif
+}
+
+int _defined_DPE_USE_LONGDOUBLE(void) {
+#ifdef DPE_USE_LONGDOUBLE
+     return 1;
+#else
+     return 0;
+#endif
+}
+
+int _defined_DPE_USE_FLOAT128(void) {
+#ifdef DPE_USE_FLOAT128
+     return 1;
+#else
+     return 0;
+#endif
+}
+
+int _defined_DPE_USE_LONG(void) {
+#ifdef DPE_USE_LONG
+     return 1;
+#else
+     return 0;
+#endif
+}
+
+int _defined_DPE_USE_LONGLONG(void) {
+#ifdef DPE_USE_LONGLONG
+     return 1;
+#else
+     return 0;
+#endif
+}
 MODULE = Math::DPE  PACKAGE = Math::DPE  PREFIX = XS_
 
 PROTOTYPES: DISABLE
@@ -1359,4 +1411,32 @@ XS_DPE_EXP (x)
 int
 XS_DPE_SIGN (x)
 	dpe_t *	x
+
+int
+XS_dpe_str_prec ()
+
+
+int
+_defined_LONGDOUBLE_IS_DOUBLEDOUBLE ()
+
+
+int
+_defined_DPE_USE_DOUBLE ()
+
+
+int
+_defined_DPE_USE_LONGDOUBLE ()
+
+
+int
+_defined_DPE_USE_FLOAT128 ()
+
+
+int
+_defined_DPE_USE_LONG ()
+
+
+int
+_defined_DPE_USE_LONGLONG ()
+
 
