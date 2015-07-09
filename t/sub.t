@@ -20,7 +20,7 @@ else {
   print "not ok 1\n";
 }
 
-if("$rop" =~ /\-3\.33.+\*10\^2/) { print "ok 2\n"}
+if("$rop" =~ /\-3\.33\d+\*10\^2/ || "$rop" =~ /\-3\.329\d+\*10\^2/) { print "ok 2\n"}
 else {
   warn "\n\$rop: $rop\n";
   print "not ok 2\n";
@@ -37,7 +37,7 @@ else {
   print "not ok 3\n";
 }
 
-if("$rop" =~ /^\s?3\.33.+\*10\^2/) { print "ok 4\n"}
+if("$rop" =~ /^\s?3\.33\d+\*10\^2/ || "$rop" =~ /^\s?3\.329\d+\*10\^2/) { print "ok 4\n"}
 else {
   warn "\n\$rop: [$rop]\n";
   print "not ok 4\n";
