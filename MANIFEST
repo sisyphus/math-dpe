@@ -5,7 +5,11 @@ DPE.xs
 Makefile.PL
 typemap
 t/00load.t
+t/basic.t
 t/add.t
 t/mul.t
 t/div.t
 t/sub.t
+t/sqrt.t
+t/cmp.t
+t/new.t
