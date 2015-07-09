@@ -3,8 +3,16 @@ use ExtUtils::MakeMaker;
 
 my $defines;
 
-if($Config{nvtype} eq 'double') {$defines = '-DDPE_USE_DOUBLE'}
-elsif($Config{nvtype} eq 'long double') {$defines = '-DDPE_USE_LONG_DOUBLE'}
+if($Config{nvtype} eq 'long double') {
+  $defines = '-DDPE_USE_LONGDOUBLE';
+  # Check whether we have DoubleDouble.
+  my $nv1 = 1.0;
+  my $nv2 = $nv1 + (2 ** -1000);
+  if($nv1 != $nv2) {
+    $defines .= ' -DLONGDOUBLE_IS_DOUBLEDOUBLE';
+  }
+}
+elsif($Config{nvtype} eq 'double') {$defines = '-DDPE_USE_DOUBLE'}
 elsif($Config{nvtype} =~ /float128/) {$defines = '-DDPE_USE_FLOAT128'}
 else {
   warn "Couldn't determine perl's NV type - bailing out";
