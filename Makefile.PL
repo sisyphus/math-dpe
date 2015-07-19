@@ -19,12 +19,10 @@ else {
   exit 0;
 }
 
-if($Config{ivtype} eq 'long') {$defines .= ' -DDPE_USE_LONG'}
-elsif($Config{ivtype} eq 'long long') {$defines .= ' -DDPE_USE_LONG_LONG'}
-else {
-  warn "Couldn't determine IV type - bailing out";
-  exit 0;
-}
+# We can define either DPE_USE_LONG or DPE_USE_LONGLONG,
+# but define the latter at your own risk.
+$defines .= ' -DDPE_USE_LONG';
+
 
 for(@ARGV) {
   if($_ eq 'WANT_GMP') {
